@@ -114,3 +114,5 @@ file is assumed to be terminated by a CR/LF pair.  Script length is limited to
 always preceeded by a semicolon, can be appended to the end of any line, or
 after the last line containing a command (commands must always begin on the
 first line of the script).
+
+(There are some debugging labels and buttons on the GUI forms.  I will try to remove them later.)
