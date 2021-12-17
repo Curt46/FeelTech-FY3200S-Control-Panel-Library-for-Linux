@@ -629,11 +629,11 @@ object FMain: TFMain
       end
       object GBSaveLoad: TGroupBox
         Left = 4
-        Height = 105
+        Height = 119
         Top = 616
         Width = 232
         Caption = 'Mem'
-        ClientHeight = 86
+        ClientHeight = 100
         ClientWidth = 228
         Color = clScrollBar
         ParentColor = False
@@ -889,31 +889,17 @@ object FMain: TFMain
           TabOrder = 20
           OnClick = PM0Click
         end
-      end
-      object Label1: TLabel
-        Left = 8
-        Height = 17
-        Top = 752
-        Width = 45
-        Caption = 'Label1'
-        ParentColor = False
-      end
-      object Button1: TButton
-        Left = 165
-        Height = 25
-        Top = 744
-        Width = 75
-        Caption = 'Button1'
-        OnClick = Button1Click
-        TabOrder = 6
-      end
-      object Label3: TLabel
-        Left = 36
-        Height = 17
-        Top = 780
-        Width = 45
-        Caption = 'Label3'
-        ParentColor = False
+        object Label1: TLabel
+          Left = 7
+          Height = 14
+          Top = 81
+          Width = 180
+          Caption = 'Click to load, Shift click to save.'
+          Font.Height = -11
+          Font.Name = 'Sans'
+          ParentColor = False
+          ParentFont = False
+        end
       end
       object GBCounter: TGroupBox
         Left = 4
@@ -928,7 +914,7 @@ object FMain: TFMain
         Font.Name = 'Sans'
         ParentColor = False
         ParentFont = False
-        TabOrder = 7
+        TabOrder = 6
         object ECounter: TEdit
           Left = 8
           Height = 27

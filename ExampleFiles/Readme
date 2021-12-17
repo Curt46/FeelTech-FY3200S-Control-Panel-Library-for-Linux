@@ -1,0 +1,7 @@
+DiskStateTest
+  This example contains a control state for an FY3224S. (binary file.)
+ScriptExample.txt
+  A script that steps the Channel 1 output from -5 to +5VDC in half-volt steps. (text file)
+Test.ftw
+  A file defining an waveform that can be loaded into one of the instrument's
+  four ARB memories. (text file).

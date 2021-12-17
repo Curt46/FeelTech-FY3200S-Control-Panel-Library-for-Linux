@@ -22,7 +22,13 @@ unit fyLib;
 
   When receivng a string from the instrument is expected, the operation may
   time out if nothing is in fact received.  The length of the timeout period
-  is defined as a constant "TimeOut: integer = 20" here.
+  is defined as a constant "TimeOut: integer = 50" here.
+
+  The control states stored in the twenty instrument memories are also
+  stored in corresponding disk files "PM0" through "PM19" in the folder
+  "PMfiles" (eg. "PMfiles/PM0"). The disk images of the stored control states
+  are used to keep the GUI control panel in sync with the actual machine control
+  state when a different hardware memory is selected.
 
 ======================================================================}
 
@@ -33,7 +39,8 @@ uses
 Type
  TChannels  = (CH1, CH2, STARTF, STOPF); {StartF and StopF used in sweep setup.}
 
- TStateRecord =  {the current settings of all controls are saved in this record.}
+ TStateRecord =
+  {the current settings of all controls are saved in records of this type.}
    record
      C1wave: integer;
      C1freq: double;
@@ -61,11 +68,12 @@ Type
 
 
 var
- Ser: TBlockSerial;
+ Ser: TBlockSerial; {interface to /dev/ttyUSB0}
 
- sParms: shortstring; {string parameter to be passed to instrument.}
  CState: TStateRecord; {current state of all programmable instrument controls.}
  StateFile: file of TStateRecord; {file of instrument states}
+
+ sParms: shortstring; {string parameter to be passed to instrument.}
  Scale: integer; {Defines frequency scale factor:  Hz, KHz, MHz}
  WaveFileReady: boolean;
  ArbTarget: byte;
@@ -76,19 +84,25 @@ Const
  TimeOut = 50;
  sNoResponse = 'No response.';
 
+{Four operations that communicate with the instrument.}
 procedure Send(Command: string);
 procedure SendByte(b: byte);
 function  SendWithResponse(Command: string): string;
 function  Receive: string;
 
+{Instrument control functions and procedures}
 function  FrequencySet(CH: TChannels; Frequency: double): boolean;
     {Handle frequency setting for both channels and sweep start and stop}
+
 function  WaveformSet(Ch: TChannels; Waveform: integer): boolean;
     {Set waveform for a channel (CH1 or CH2).  See notes for waveforms.}
+
 function  AmplitudeSet(CH: TChannels; Level: double): boolean;
     {Set amplitude for a channel (CH1 or CH2).}
+
 function  OffsetSet(CH: TChannels; Offset: double): boolean;
     {Set offset  for a channel (CH1 or CH2).}
+
 function  DutyCycleSet(CH: TChannels; DutyCycle: double): boolean;
     {Set duty cycle for a channels (CH1 or CH2).}
 
@@ -97,34 +111,45 @@ function  PhaseSet(Phase: integer): boolean;
     {Set phase for CH2 relative to CH1. Can only be set by program for CH2.}
 
 function  SweepTimeSet(aTime: integer): boolean;
+    {Set duration of sweep.}
+
 function  SweepModeSet(mode: integer): boolean;
     {Sweep frequencies are set using the "FrequencySet" function above.}
+
 procedure StartSweep;
     {Start sweep action.}
+
 procedure PauseSweep;
     {Stop sweep action.  No way to juist "pause" it as far as I know although it
      can be done manually.}
 
 function  TriggerSourceSet(Source: integer): boolean;
+
 function  TrigCountSet(Count: integer): boolean;
 
 function  PulseWidthSet(Width: double): boolean;
 
 procedure CounterClear;
+
 function GetCount: string;
+
 function GetExtF: string;
+
 function GetCh1F: string;
 
 function ArbWaveLoaded(FileName: string): boolean;
+
 function ArbWaveStored: boolean;
+    {Open a text file containing a wave description and prepare it to send
+     to the instrument if it meets basic conditions.}
 
 function  SaveState(InMemory: integer): boolean;
-    {Save the current instrument state to a disk file.}
+    {Save the current instrument state to instrument memory and a related disk file.}
+
 function  LoadState(FromMemory: integer): boolean;
-    {Load a stored instrument state from a disk file.}
+    {Load a stored instrument state from an intrument memory and a disk file.}
 
 implementation
-//Uses Main;
 
 procedure Send(Command: string);
 begin
@@ -143,7 +168,6 @@ begin
  Ser.SendString(Command+#10);
  sleep(50);
  S := Ser.RecvPacket(TimeOut);
-// S := Ser.RecvTerminated(TimeOut,#10);
  result := S
 end;
 
@@ -396,7 +420,7 @@ begin
    Ser.SendByte(blo[i]);
    sleep(5);
   end;
-// if not(FMain.Responded('N')) then exit else result := True;
+ {The instrument will return a string here: 'XN' I think.}
 end;
 
 
@@ -406,7 +430,7 @@ begin
   begin
    sParms := IntToStr(InMemory);
    Send('bs'+sParms);
-   AssignFile(StateFile,'PM'+IntToStr(InMemory));
+   AssignFile(StateFile,'PMFiles/PM'+IntToStr(InMemory));
    ReWrite(StateFile);
    Write(StateFile,CState);
    CloseFile(StateFile);
@@ -421,7 +445,7 @@ begin
   begin
    sParms := IntToStr(FromMemory);
    Send('bl'+sParms);
-   AssignFile(StateFile,'PM'+IntToStr(FromMemory));
+   AssignFile(StateFile,'PMFiles/PM'+IntToStr(FromMemory));
    Reset(StateFile);
    Read(StateFile,CState);
    CloseFile(StateFile);

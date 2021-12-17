@@ -1,0 +1,23 @@
+WP6;     Set DC mode on Ch1
+OP-5.00  Set initial offset to -5V
+OP-4.5
+op-4
+op-3.5
+op-3
+op-2.5
+op-2
+op-1.5
+op-1
+op-0.5
+op0
+op0.5
+op1
+op1.5
+op2
+op2.5
+op3
+op3.5
+op4
+op4.5
+op5,gt2
+; This script simply steps Ch1 from -5V DC to +5V DC in 0.5V steps

@@ -23,6 +23,7 @@ type
     EScriptFile: TEdit;
     EStepTime: TEdit;
     GBScriptFile: TGroupBox;
+    Label1: TLabel;
     LStep: TLabel;
     LStepTime: TLabel;
 
@@ -115,7 +116,6 @@ type
       PM9: TPanel;
       PMF: TPanel;
 
-      Button1: TButton;
 
    TabSheet2: TTabSheet; //ARB Wave
     RGMemory: TRadioGroup;
@@ -126,9 +126,7 @@ type
 
    TabSheet3: TTabSheet; //script
 
-     Label1: TLabel;
      Label2: TLabel;
-     Label3: TLabel;
      Timer1: TTimer;
 
     procedure BArbRunClick(Sender: TObject);
@@ -171,7 +169,6 @@ type
     procedure PMFClick(Sender: TObject);
     {Handles load/save instrument state from PC disk file.}
 
-    procedure Button1Click(Sender: TObject);
     procedure Timer1Timer(Sender: TObject);
 
 
@@ -219,11 +216,20 @@ begin
 end;
 
 procedure TFMain.FormShow(Sender: TObject);
+var S: string;
+{The instrument returns a line-feed terminated model type string if one
+ is connected to /dev/ttyUSB0, otherwise response times out.}
 begin
- if (SendWithResponse('a')= '') then
+ S := SendWithResponse('a');
+ if S = '' then
   begin
    ShowMessage('No FT32XXS on ttyUSB0 found.');
    Halt;
+  end
+ else
+  begin
+   S[length(S)] := ' ';
+   FMain.Caption := S + 'Control'
   end;
 end;
 
@@ -685,10 +691,6 @@ begin
    LStep.Caption := SNEXTSTEP+'1';
 end;
 
-
-
-
-
 procedure TFMain.BScrSaveClick(Sender: TObject);
 var ScriptFile: text;
  i: integer;
@@ -817,14 +819,6 @@ procedure TFMain.BScrPauseClick(Sender: TObject);
 begin
  Timer1.Enabled := False;
 end;
-
-
-
-procedure TFMain.Button1Click(Sender: TObject);
-begin
- Label1.Caption := SendWithResponse('a');
-end;
-
 
 
 initialization
