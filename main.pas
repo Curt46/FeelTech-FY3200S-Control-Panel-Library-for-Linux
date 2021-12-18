@@ -129,7 +129,7 @@ type
      Label2: TLabel;
      Timer1: TTimer;
 
-    procedure BArbRunClick(Sender: TObject);
+    procedure BArbStoreClick(Sender: TObject);
     procedure BCtrClrClick(Sender: TObject);
     procedure BCtrExtCntClick(Sender: TObject);
     procedure BCtrExtFClick(Sender: TObject);
@@ -426,6 +426,7 @@ end;
  Handle Save/Load/Update System State
 =============================================================================}
 procedure TFMain.UpdateDisplayState(M: integer);
+{Update the Control Tab GUI to represent the current instrument control state.}
 
   function DisplayFreq(F: double): shortstring;
   begin
@@ -488,7 +489,7 @@ begin
   TPanel(Sender).Color := clLime;
   Application.processmessages;
   if ssShift in ShiftState then
-   {Save an instrument state}
+   {-------- Save an instrument state -------}
    begin
     if (M > 19) then
      {Save to a disk file.}
@@ -508,7 +509,7 @@ begin
      end;
    end
   else
-   {Load an instrument state.}
+  {-------- Load an instrument state -------}
    begin
     if (M > 19) then
      {Load state from a disk file.}
@@ -557,7 +558,7 @@ begin
    end;
 end;
 
-procedure TFMain.BArbRunClick(Sender: TObject);
+procedure TFMain.BArbStoreClick(Sender: TObject);
 var i,j: integer;
 
  procedure waiting;

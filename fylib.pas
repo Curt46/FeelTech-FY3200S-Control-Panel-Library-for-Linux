@@ -68,29 +68,36 @@ Type
 
 
 var
- Ser: TBlockSerial; {interface to /dev/ttyUSB0}
+ Ser: TBlockSerial;    {Interface to /dev/ttyUSB0.}
 
- CState: TStateRecord; {current state of all programmable instrument controls.}
- StateFile: file of TStateRecord; {file of instrument states}
+ CState: TStateRecord; {Current state of all programmable instrument controls.}
+ StateFile: file of TStateRecord; {File of instrument states}
 
- sParms: shortstring; {string parameter to be passed to instrument.}
- Scale: integer; {Defines frequency scale factor:  Hz, KHz, MHz}
- WaveFileReady: boolean;
- ArbTarget: byte;
+ sParms: shortstring;  {string parameter to be passed to instrument as part of a command.}
+
+ Scale: integer;       {Defines frequency scale factor:  Hz, KHz, MHz}
+
+ ArbTarget: byte;      {Arbitrary waveform memory to be loaded: 1,2,3, or 4.}
  bhi, blo: array[1..2048] of byte; {Storage for bytes of arbitrary waveform.}
+ WaveFileReady: boolean;
+
  sReceived: shortstring;
 
 Const
  TimeOut = 50;
  sNoResponse = 'No response.';
 
-{Four operations that communicate with the instrument.}
+{============================================================================
+ Four procedures that communicate with the instrument using synaSER.
+ =============================================================================}
 procedure Send(Command: string);
 procedure SendByte(b: byte);
 function  SendWithResponse(Command: string): string;
 function  Receive: string;
 
-{Instrument control functions and procedures}
+{============================================================================
+ Instrument control functions and procedures.
+ =============================================================================}
 function  FrequencySet(CH: TChannels; Frequency: double): boolean;
     {Handle frequency setting for both channels and sweep start and stop}
 
@@ -124,24 +131,34 @@ procedure PauseSweep;
      can be done manually.}
 
 function  TriggerSourceSet(Source: integer): boolean;
+    {Set trigger source.}
 
 function  TrigCountSet(Count: integer): boolean;
+    {Set number of triggers.}
 
 function  PulseWidthSet(Width: double): boolean;
+    {Set width of pulse for "PULSE" waveform on Ch1.}
 
 procedure CounterClear;
+    {Clear the counter.}
 
 function GetCount: string;
+    {Read the current count.}
 
 function GetExtF: string;
+    {Read the current measured external frequency (gate time = 1sec.)}
 
 function GetCh1F: string;
+    {Read the current frequency setting for Ch1.  May be useful when a sweep
+     is paused, but otherwise?}
 
 function ArbWaveLoaded(FileName: string): boolean;
+    {Loads a waveform definition from a file and checks it for in-range
+     values and file length.}
 
 function ArbWaveStored: boolean;
-    {Open a text file containing a wave description and prepare it to send
-     to the instrument if it meets basic conditions.}
+    {Sends a loaded waveform definition to the instrument for storage in one
+     of its ARB memory areas.}
 
 function  SaveState(InMemory: integer): boolean;
     {Save the current instrument state to instrument memory and a related disk file.}
@@ -149,8 +166,13 @@ function  SaveState(InMemory: integer): boolean;
 function  LoadState(FromMemory: integer): boolean;
     {Load a stored instrument state from an intrument memory and a disk file.}
 
+
+
 implementation
 
+{============================================================================
+ Four procedures that communicate with the instrument using synaSER.
+ =============================================================================}
 procedure Send(Command: string);
 begin
  Ser.SendString(Command+#10);
@@ -179,6 +201,9 @@ begin
  result := S;
 end;
 
+{============================================================================
+ Instrument control functions and procedures.
+ =============================================================================}
 function WaveformSet(CH: TChannels; Waveform: integer): boolean;
 {Returns true if wafeform is set, false otherwise}
 begin
@@ -311,6 +336,7 @@ begin
 end;
 
 function TriggerSourceSet(Source: integer): boolean;
+{ Source: 0 -- manual trigger; 1 -- external trigger;  2: Ch2 trigger.}
 begin
  result := true;
  case Source of
@@ -367,13 +393,20 @@ end;
 function GetCh1F: string;
 begin
  result := SendWithResponse('cf');
-// send('ce');
-// sleep(20);
-// result := ser.recvpacket(timeout);
 end;
 
-
+{----------Arbitrary Waveform operations ------------}
 function ArbWaveLoaded(FileName: string): boolean;
+{Open a disk file defining a waveform description and prepare it to send to the
+ instrument.  The waveform file must contain exactly 2048 text lines, with each
+ line containing a single floating point number in the interval [-1.00, 1.00].
+ These values will be scaled to between 0 and 4095, separated into two bytes
+ and be stored in arrays bhi[i] and blo[i].
+
+ If this processing is successful, then the variable "WaveFileReady" is set to true
+ and the function returns "true," otherwise WaveFileReady is set false and the
+ function returns false.  "WaveFileReady" is intended to provide a safeguard against
+ trying to store an invalid description.}
 var
  WaveFile: text;
  i: integer;
@@ -423,8 +456,17 @@ begin
  {The instrument will return a string here: 'XN' I think.}
 end;
 
+{----------Load and save intrument states to instrument memory. ----------
+   If you make manual changes to the instrument state stored in hardware
+   memory "n", you program will need to update the corresponding disk file
+   "PMn" to reflect those changes.  This requires executing a "LoadState(n)"
+   call followed by a "SaveState(n)".  In my case, I rarely use the hardware
+   interface to the instrument, since my FY3224S is always teathered to my PC.}
 
 function SaveState(InMemory: integer): boolean;
+{When an instrument state is saved to one of its twenty memories, it is also
+saved in a disk file so that the state can be read by the calling program.  These
+files are named "PM0" ~ "PM19" in the directory "PMFiles."}
 begin
  if ((InMemory <= 19) and (InMemory >= 0)) then
   begin
@@ -440,6 +482,9 @@ begin
 end;
 
 function LoadState(FromMemory: integer): boolean;
+{When an instrument state is loaded from one of its internal memories, a disk
+file containing the data for that state is also read into the record variable
+"CState" that can be read by the calling program.}
 begin
  if ((FromMemory <= 19) and (FromMemory >= 0)) then
   begin
@@ -455,7 +500,9 @@ begin
 end;
 
 Initialization
- Ser:=TBlockSerial.Create;
+ {Set up the serial communications channel between the instrument and the
+  PC.  Note the "Ser.LinuxLock := false" line.}
+ Ser := TBlockSerial.Create;
  Ser.LinuxLock:=false;
  Ser.Connect('/dev/ttyUSB0');
  if Ser.Handle=INVALID_HANDLE_VALUE then
@@ -463,6 +510,7 @@ Initialization
  Ser.Config(9600,8,'N',1,false,false);
 
 finalization
+{Close the serial communications channel between the instrument and the PC.}
 if Ser.Handle<>INVALID_HANDLE_VALUE then
  begin
    Ser.Purge;
@@ -472,9 +520,4 @@ Ser.Free;
 
 end.
 
-cf - query main channel freq. respose e.g. cf0000000050
-cd - get main duty cycle - cd500
-ce - get counter frequency response e.g. ce0000000000
-cc - get counter count repsonse e.g. cc0000000000
-ct - get sweep time xx e.g. ct10
-bc - clear counter
+

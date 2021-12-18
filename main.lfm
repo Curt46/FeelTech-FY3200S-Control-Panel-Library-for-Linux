@@ -5,6 +5,7 @@ object FMain: TFMain
   Width = 261
   HorzScrollBar.Page = 369
   VertScrollBar.Page = 293
+  ActiveControl = PageControl1
   Caption = 'FY3200S Control'
   ClientHeight = 880
   ClientWidth = 261
@@ -970,8 +971,8 @@ object FMain: TFMain
         Height = 25
         Top = 136
         Width = 75
-        Caption = 'Run'
-        OnClick = BArbRunClick
+        Caption = 'Store'
+        OnClick = BArbStoreClick
         TabOrder = 0
       end
       object RGMemory: TRadioGroup
