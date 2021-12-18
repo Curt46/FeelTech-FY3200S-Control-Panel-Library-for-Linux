@@ -6,7 +6,7 @@ A Library and GUI to Control a FeelTech FY3200S Signal Generator for Linux using
 ![Screenshot](ScriptTab.png)
 
 This is a control program and library of control functions for the FeelTech
-FYS3200S Dual Channel signal generator, written using Lazarus/Free Pascal.
+FYS3200S Dual Channel signal generator for Linux, written using Lazarus/Free Pascal.
 Lazarus allows the source code here to be compiled for several different operating
 system environments (Linux,Windows, Mac).  The executable included is compiled for
 Ubuntu Linux environment.
@@ -115,4 +115,4 @@ always preceeded by a semicolon, can be appended to the end of any line, or
 after the last line containing a command (commands must always begin on the
 first line of the script).
 
-(FY3200S is the Linux executable for this program.  It was compiled with debugging turned on, hence its large size.)
+(FY3200S is the Linux executable for this program.)
