@@ -117,9 +117,9 @@ after the last line containing a command (commands must always begin on the
 first line of the script).
 
 Another Lazarus program that includes the the "SimpleIPCClient" component in its code can exercise control all of the functions
-of the FS3200S by sending script command strings (in the format described above) to the this program's embedded server implemented
-using the "SimpleIPCServer" component included in this code.   The client must be set to send messages to serverID "FY3200SIPC"
-and the "Remote" checkbox must be checked.  When remote control is no longer desired, the client can uncheck this box by sending
-a "HL" command to the server.
+of the FS3200S by sending script command strings (in the format described above) to this program's embedded server implemented
+using the "SimpleIPCServer" component in this code.   The client must be set to send messages to serverID "FY3200SIPC"
+and the "Remote" checkbox must be checked in the Script tab of this program.  When remote control is no longer desired, the client
+can uncheck this box by sending a "HL" command to the server.
 
 (FY3200S is the Linux executable for this program.)
